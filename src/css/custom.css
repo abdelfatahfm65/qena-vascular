@@ -1,0 +1,125 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #2e8555;
+  --ifm-color-primary-dark: #29784c;
+  --ifm-color-primary-darker: #277148;
+  --ifm-color-primary-darkest: #205d3b;
+  --ifm-color-primary-light: #33925d;
+  --ifm-color-primary-lighter: #359962;
+  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1fa588;
+  --ifm-color-primary-darkest: #1a8870;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+/* ===== Medical Reading UX ===== */
+
+/* عرض النص يكون مريح (مش عريض جدًا) */
+:root {
+  --medical-max-width: 780px;
+}
+
+/* خلي منطقة المحتوى نفسها أضيق ومريحة للعين */
+@media (min-width: 997px) {
+  .docItemCol_node_modules-\@docusaurus-theme-classic-lib-theme-DocItem-Layout-styles-module {
+    max-width: var(--medical-max-width);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* تحسين القراءة داخل markdown */
+.markdown {
+  font-size: 17px;
+  line-height: 1.85;
+  letter-spacing: 0.1px;
+}
+
+.markdown p {
+  margin: 0.75rem 0 1rem;
+}
+
+.markdown h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown h2 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.45rem;
+}
+
+.markdown h3 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.15rem;
+}
+
+/* جداول أجمل وأسهل */
+.markdown table {
+  display: block;
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.markdown table th,
+.markdown table td {
+  padding: 10px 12px;
+}
+
+/* Quote blocks شكلها طبي (Definition / Warning) */
+.markdown blockquote {
+  border-left: 4px solid var(--ifm-color-primary);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(46, 133, 85, 0.08);
+}
+
+/* فصل أفقي ناعم */
+.markdown hr {
+  margin: 1.6rem 0;
+  opacity: 0.25;
+}
+
+/* صور في النص متتعبش العين */
+.med-figure {
+  margin: 18px 0;
+  text-align: center;
+}
+
+.med-caption {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* زرار عام لو احتجناه */
+.med-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #2e8555;
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
