@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "@theme/Layout";
 import { useLocation } from "@docusaurus/router";
 import { getSupabase } from "../lib/supabaseClient";
 
 export default function LoginPage() {
+  const location = useLocation();
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const returnTo = params.get("returnTo") || "/docs/intro";
+
+  const supabase = useMemo(() => getSupabase(), []);
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -11,60 +16,83 @@ export default function LoginPage() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
 
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const returnTo = params.get("returnTo") || "/docs/intro";
+  // لو الصفحة اتفتحت بعد ضغط confirm من الإيميل:
+  // Supabase ممكن يحط في الـ URL: ?error=... أو يسيبها فاضية.
+  // وبيسجّل الجلسة تلقائيًا في المتصفح إذا الـ redirect URL صح.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const errDesc = p.get("error_description");
+    const errCode = p.get("error_code");
+    const err = p.get("error");
 
-  const supabase = getSupabase();
-
-  // لو الكونفيج مش موجود ما نكسرش الصفحة
-  if (!supabase) {
-    return (
-      <Layout title="Login">
-        <main style={{ padding: "44px 0" }}>
-          <div className="container" style={{ maxWidth: 520 }}>
-            <h1 style={{ marginBottom: 6 }}>Login</h1>
-            <p style={{ opacity: 0.8 }}>
-              Supabase config missing. Check <b>/static/config.js</b> then refresh.
-            </p>
-          </div>
-        </main>
-      </Layout>
-    );
-  }
+    if (err || errDesc || errCode) {
+      // رسائل Supabase الشائعة بعد لينك فاسد/منتهي
+      setError(errDesc || errCode || err || "Confirmation link error.");
+    } else {
+      // لو جيت من confirm صحيح، غالبًا الجلسة هتكون اتخزنت
+      // نعمل check سريع
+      (async () => {
+        try {
+          const { data } = await supabase.auth.getSession();
+          if (data?.session) {
+            // شيل أي query من الـ URL بعد النجاح عشان شكل الصفحة يبقى نظيف
+            window.history.replaceState({}, "", "/login");
+            window.location.href = returnTo;
+          }
+        } catch {
+          // تجاهل
+        }
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setInfo("");
     setBusy(true);
 
     try {
+      if (!supabase) throw new Error("Supabase is not ready.");
+
       if (mode === "signup") {
+        // ده أهم سطر: خلي redirect يرجع لنفس الدومين الحالي بدل localhost
+        const emailRedirectTo = `${window.location.origin}/login`;
+
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { name } }, // الاسم يتخزن في user_metadata
+          options: {
+            data: { name }, // بيتخزن في user_metadata
+            emailRedirectTo,
+          },
         });
+
         if (signUpError) throw signUpError;
 
         // لو Email confirmation شغال، session هتكون null
         if (!data?.session) {
-          alert("Account created. Please check your email to confirm, then login.");
+          setInfo("Account created ✅ Please check your email to confirm, then login.");
           return;
         }
 
+        // لو مفيش confirmation (أو اتعمل auto-confirm)
         window.location.href = returnTo;
       } else {
         const { data, error: loginError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+
         if (loginError) throw loginError;
 
-        // اختياري: لو كتبت اسم وقت الـ login نعمل update بس (بدون insert)
+        // Optional: تحديث الاسم فقط بعد الدخول (Update مش Insert)
         const user = data?.user;
         if (user && name.trim()) {
+          // لو RLS مضبوط، ده هيعدّي لأنه UPDATE على نفس المستخدم
           await supabase.from("profiles").update({ name: name.trim() }).eq("id", user.id);
         }
 
@@ -81,9 +109,7 @@ export default function LoginPage() {
     <Layout title="Login" description="Login to access the library">
       <main style={{ padding: "44px 0" }}>
         <div className="container" style={{ maxWidth: 520 }}>
-          <h1 style={{ marginBottom: 6 }}>
-            {mode === "signup" ? "Create account" : "Login"}
-          </h1>
+          <h1 style={{ marginBottom: 6 }}>{mode === "signup" ? "Create account" : "Login"}</h1>
           <p style={{ opacity: 0.8, marginBottom: 18 }}>
             Access to the Vascular Library requires login.
           </p>
@@ -120,6 +146,7 @@ export default function LoginPage() {
             />
 
             {error && <div style={errorStyle}>{error}</div>}
+            {info && <div style={infoStyle}>{info}</div>}
 
             <button type="submit" disabled={busy} style={primaryBtn}>
               {busy ? "Please wait..." : mode === "signup" ? "Sign up" : "Login"}
@@ -130,14 +157,13 @@ export default function LoginPage() {
               onClick={() => setMode(mode === "signup" ? "login" : "signup")}
               style={secondaryBtn}
             >
-              {mode === "signup"
-                ? "Have an account? Login"
-                : "New student? Create account"}
+              {mode === "signup" ? "Have an account? Login" : "New student? Create account"}
             </button>
           </form>
 
           <div style={{ marginTop: 14, fontSize: 13, opacity: 0.7 }}>
-            Tip: Use a strong password. You can add Google login later.
+            Tip: If the confirm link opens <b>localhost</b>, fix Supabase Auth URL Configuration
+            (Site URL + Redirect URLs) to your Stackblitz domain.
           </div>
         </div>
       </main>
@@ -157,7 +183,15 @@ const errorStyle = {
   borderRadius: 12,
   background: "rgba(200,35,51,0.08)",
   border: "1px solid rgba(200,35,51,0.25)",
-  fontWeight: 700,
+  fontWeight: 800,
+};
+
+const infoStyle = {
+  padding: 12,
+  borderRadius: 12,
+  background: "rgba(46,133,85,0.10)",
+  border: "1px solid rgba(46,133,85,0.30)",
+  fontWeight: 800,
 };
 
 const primaryBtn = {

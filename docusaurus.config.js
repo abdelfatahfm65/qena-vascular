@@ -70,6 +70,12 @@ const config = {
           position: "left",
           label: "Library",
         },
+        {
+          type: "html",
+          position: "right",
+          value: '<div id="user-menu"></div>',
+        },
+        
       ],
     },
 
