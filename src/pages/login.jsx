@@ -16,20 +16,22 @@ export default function LoginPage() {
   const params = new URLSearchParams(location.search);
   const returnTo = params.get("returnTo") || "/docs/intro";
 
-  async function upsertProfile(user) {
-    const supabase = getSupabase();
-    if (!supabase) throw new Error("Supabase is not configured. Please reload.");
+  const supabase = getSupabase();
 
-    // user.email ممكن تكون null في بعض الحالات النادرة
-    const userEmail = user?.email || email;
-
-    const { error: dbError } = await supabase.from("profiles").upsert({
-      id: user.id,
-      name: name || user.user_metadata?.name || "",
-      email: userEmail,
-    });
-
-    if (dbError) throw dbError;
+  // لو الكونفيج مش موجود ما نكسرش الصفحة
+  if (!supabase) {
+    return (
+      <Layout title="Login">
+        <main style={{ padding: "44px 0" }}>
+          <div className="container" style={{ maxWidth: 520 }}>
+            <h1 style={{ marginBottom: 6 }}>Login</h1>
+            <p style={{ opacity: 0.8 }}>
+              Supabase config missing. Check <b>/static/config.js</b> then refresh.
+            </p>
+          </div>
+        </main>
+      </Layout>
+    );
   }
 
   async function handleSubmit(e) {
@@ -38,42 +40,34 @@ export default function LoginPage() {
     setBusy(true);
 
     try {
-      const supabase = getSupabase();
-      if (!supabase) {
-        throw new Error(
-          "Supabase config missing. Check /config.js and refresh the page."
-        );
-      }
-
       if (mode === "signup") {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: { name },
-          },
+          options: { data: { name } }, // الاسم يتخزن في user_metadata
         });
         if (signUpError) throw signUpError;
 
-        if (data?.user) await upsertProfile(data.user);
-
-        // لو Email confirmation شغال، session هتبقى null
+        // لو Email confirmation شغال، session هتكون null
         if (!data?.session) {
-          alert(
-            "Account created. Please check your email to confirm, then login."
-          );
-        } else {
-          window.location.href = returnTo;
+          alert("Account created. Please check your email to confirm, then login.");
+          return;
         }
+
+        window.location.href = returnTo;
       } else {
-        const { data, error: loginError } =
-          await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+        const { data, error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
         if (loginError) throw loginError;
 
-        if (data?.user) await upsertProfile(data.user);
+        // اختياري: لو كتبت اسم وقت الـ login نعمل update بس (بدون insert)
+        const user = data?.user;
+        if (user && name.trim()) {
+          await supabase.from("profiles").update({ name: name.trim() }).eq("id", user.id);
+        }
+
         window.location.href = returnTo;
       }
     } catch (err) {
@@ -121,9 +115,7 @@ export default function LoginPage() {
               placeholder="Password"
               type="password"
               required
-              autoComplete={
-                mode === "signup" ? "new-password" : "current-password"
-              }
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
               style={inputStyle}
             />
 
