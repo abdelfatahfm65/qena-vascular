@@ -1,87 +1,84 @@
 // @ts-check
-import { themes as prismThemes } from 'prism-react-renderer';
+import { themes as prismThemes } from "prism-react-renderer";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Vascular Surgery Library',
-  tagline: 'A focused medical learning library',
-  favicon: 'img/favicon.ico',
+  title: "Vascular Surgery Library",
+  tagline: "A focused medical learning library",
+  favicon: "img/favicon.ico",
 
   future: {
     v4: true,
   },
 
-  url: 'https://your-docusaurus-site.example.com',
-  baseUrl: '/',
+  // مهم: ده بيتحدد لما تنشر على Vercel/GitHub Pages
+  url: "https://your-docusaurus-site.example.com",
+  baseUrl: "/",
 
-  organizationName: 'abdelfatahfm65',
-  projectName: 'vascular-surgery-library',
+  organizationName: "abdelfatahfm65",
+  projectName: "vascular-surgery-library",
 
-  onBrokenLinks: 'throw',
+  onBrokenLinks: "throw",
 
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
+
+  // ✅ أهم سطر عشان Supabase config يشتغل
+  scripts: ["/config.js"],
 
   presets: [
     [
-      'classic',
+      "classic",
+      /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarPath: './sidebars.js',
-
-          // لو تحب تخلي المكتبة تفتح من الصفحة الرئيسية بدل /docs
-          // routeBasePath: '/',
-
-          // شيل روابط "Edit this page"
+          sidebarPath: "./sidebars.js",
+          // routeBasePath: '/', // لو عايز docs يبقى هو الصفحة الرئيسية
           editUrl: undefined,
         },
 
-        // اقفل الـ Blog بالكامل عشان يختفي من الموبايل والنافبار
         blog: false,
 
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: "./src/css/custom.css",
         },
       }),
     ],
   ],
 
-  themeConfig: ({
-    image: 'img/docusaurus-social-card.jpg',
+  /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
+  themeConfig: {
+    image: "img/docusaurus-social-card.jpg",
 
     colorMode: {
       respectPrefersColorScheme: true,
-      disableSwitch: false, // خلي زر الـ Dark/Light موجود (مفيد للقراءة)
+      disableSwitch: false,
     },
 
     navbar: {
-      title: 'Vascular Library',
+      title: "Vascular Library",
       logo: {
-        alt: 'Vascular Library',
-        src: 'img/logo.svg',
+        alt: "Vascular Library",
+        src: "img/logo.svg",
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Library',
+          type: "docSidebar",
+          sidebarId: "tutorialSidebar",
+          position: "left",
+          label: "Library",
         },
-        // شيلنا Blog و GitHub من هنا
       ],
     },
 
-    // Footer: نظّفه وخليه بسيط (مكتبة مش موقع تسويق)
     footer: {
-      style: 'dark',
+      style: "dark",
       links: [
         {
-          title: 'Library',
-          items: [
-            { label: 'Introduction', to: '/docs/intro' },
-          ],
+          title: "Library",
+          items: [{ label: "Introduction", to: "/docs/intro" }],
         },
       ],
       copyright: `© ${new Date().getFullYear()} Vascular Surgery Library`,
@@ -91,7 +88,7 @@ const config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
     },
-  }),
+  },
 };
 
 export default config;
