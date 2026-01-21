@@ -6,6 +6,8 @@ sidebar_position: 1
 import Callout from '@site/src/components/Callout';
 import QuizCard from '@site/src/components/QuizCard';
 import YouTubeLink from '@site/src/components/YouTubeLink';
+import varicoseVeinsQuestions from '@site/src/data/questions/varicoseVeins';
+
 
 # Varicose Veins
 
@@ -133,5 +135,10 @@ Goal: localize incompetent valves/perforators
 ---
 
 ## Test yourself
-{/* لو عندك Quiz بعدين */}
-{/* <QuizCard to="/quizzes/varicose-veins" title="Test yourself" subtitle="Varicose Veins quiz" count={10} /> */}
+
+<QuizCard
+  to="/quizzes/varicose-veins"
+  title="Varicose Veins Quiz"
+  subtitle="Test your understanding"
+  count={varicoseVeinsQuestions.length}
+/>
