@@ -5,6 +5,8 @@ sidebar_position: 2
 
 import Callout from '@site/src/components/Callout';
 import YouTubeLink from '@site/src/components/YouTubeLink';
+import QuizCard from '@site/src/components/QuizCard';
+import dvtQuestions from '@site/src/data/questions/dvt';
 
 # Deep Vein Thrombosis (DVT)
 
@@ -113,3 +115,12 @@ Examples:
 
 ## (Optional) Video
 <YouTubeLink id="PUT_VIDEO_ID_HERE" title="DVT overview / diagnosis" />
+
+## Test yourself
+
+<QuizCard
+  to="/quizzes/dvt"
+  title="Deep Vein Thrombosis Quiz"
+  subtitle="Test your understanding"
+  count={dvtQuestions.length}
+/>
