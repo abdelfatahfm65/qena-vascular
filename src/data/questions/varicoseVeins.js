@@ -53,7 +53,7 @@ const varicoseVeinsLesson = {
   cases: [
     {
       id: "vv-case-1",
-      title: "Case 1: Medial leg varicosities in a standing job",
+      title: "Case 1",
       vignette:
         "A 38-year-old teacher complains of heavy aching legs worse at the end of the day. On standing examination, there are visible tortuous veins along the medial aspect of the leg. No history of DVT.",
       questions: [
@@ -91,7 +91,7 @@ const varicoseVeinsLesson = {
     },
     {
       id: "vv-case-2",
-      title: "Case 2: Recurrent varicose veins with post-thrombotic history",
+      title: "Case 2",  
       vignette:
         "A 55-year-old patient has recurrent varicose veins with ankle skin changes (eczema/hyperpigmentation). There is a history of previous DVT years ago.",
       questions: [
