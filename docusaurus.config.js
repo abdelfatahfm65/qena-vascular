@@ -85,14 +85,12 @@ const config = {
     },
 
     footer: {
-      style: "dark",
-      links: [
-        {
-          title: "Library",
-          items: [{ label: "Introduction", to: "/docs/intro" }],
-        },
-      ],
-      copyright: `© ${new Date().getFullYear()} Vascular Surgery Library`,
+      style: 'dark',
+      links: [],
+      copyright: `
+        © ${new Date().getFullYear()} Vascular Surgery Library   
+        - Developed by Dr. Abdelfatah Fathy
+      `,
     },
 
     prism: {
