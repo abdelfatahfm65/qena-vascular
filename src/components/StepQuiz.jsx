@@ -1,6 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-export default function StepQuiz({ questions = [], onExit, title = "Quiz" }) {
+export default function StepQuiz({
+  questions = [],
+  onExit,
+  title = "Quiz",
+  autoStart = false, // ✅ NEW
+}) {
   const total = questions.length;
 
   const [started, setStarted] = useState(false);
@@ -15,6 +20,20 @@ export default function StepQuiz({ questions = [], onExit, title = "Quiz" }) {
   const score = useMemo(() => {
     return questions.reduce((acc, q, i) => acc + (selected[i] === q.answer ? 1 : 0), 0);
   }, [questions, selected]);
+
+  // ✅ لو autoStart=true ادخل مباشرة على الأسئلة
+  useEffect(() => {
+    if (autoStart) {
+      setStarted(true);
+    } else {
+      // لو autoStart=false ارجع لشاشة البداية (خصوصًا لو نفس الكومبوننت اتعاد استخدامه)
+      setStarted(false);
+    }
+    // دايمًا ابدأ من الأول لما تتغير الأسئلة/المود
+    setIndex(0);
+    setSelected({});
+    setSubmitted(false);
+  }, [autoStart, questions]);
 
   function start() {
     setStarted(true);
@@ -37,7 +56,8 @@ export default function StepQuiz({ questions = [], onExit, title = "Quiz" }) {
   }
 
   function reset() {
-    setStarted(false);
+    // ✅ لو الصفحة فيها menu-start (autoStart=true) ما نرجعش لشاشة Start الداخلية
+    setStarted(autoStart ? true : false);
     setIndex(0);
     setSelected({});
     setSubmitted(false);
@@ -54,7 +74,7 @@ export default function StepQuiz({ questions = [], onExit, title = "Quiz" }) {
     );
   }
 
-  // Start Screen
+  // Start Screen (هتظهر فقط لو autoStart=false)
   if (!started) {
     return (
       <div
@@ -125,9 +145,7 @@ export default function StepQuiz({ questions = [], onExit, title = "Quiz" }) {
         </p>
 
         <details style={{ marginTop: 10 }}>
-          <summary style={{ cursor: "pointer", fontWeight: 800 }}>
-            Review answers
-          </summary>
+          <summary style={{ cursor: "pointer", fontWeight: 800 }}>Review answers</summary>
 
           <div style={{ marginTop: 12 }}>
             {questions.map((q, i) => {
