@@ -52,6 +52,9 @@ export default function Home() {
               <Link className="button button--secondary button--lg" to="/docs/venous/varicose-veins">
                 Venous Track
               </Link>
+              <Link className="button button--secondary button--lg" to="/exam">
+                Comprehensive Exam
+              </Link>
             </div>
 
             <hr style={{ margin: '28px 0' }} />

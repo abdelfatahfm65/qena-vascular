@@ -71,6 +71,11 @@ const config = {
           label: "Library",
         },
         {
+          to: "/exam",
+          label: "Comperhensive Exam",
+          position: "left",
+        },
+        {
           type: "html",
           position: "right",
           value: '<div id="user-menu"></div>',
