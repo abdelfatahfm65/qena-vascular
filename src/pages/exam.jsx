@@ -1,174 +1,225 @@
-import React, {useMemo, useState} from 'react';
-import Layout from '@theme/Layout';
-import Heading from '@theme/Heading';
-import Link from '@docusaurus/Link';
+import React, { useMemo, useState } from "react";
+import Layout from "@theme/Layout";
+import Link from "@docusaurus/Link";
 
-// ✅ Question banks (put them under: src/data/questions/)
-import aliQuestions from '../data/questions/ali';
-import cltiQuestions from '../data/questions/clti';
-import aneurysmQuestions from '../data/questions/aneurysm';
-import avfQuestions from '../data/questions/avf';
-import dvtQuestions from '../data/questions/dvt';
-import varicoseVeinsQuestions from '../data/questions/varicoseVeins';
-import vascularTraumaQuestions from '../data/questions/vascular-trauma';
+import StepQuiz from "../components/StepQuiz";
 
-// ---- Config: fixed blueprint totals (sum must be 20) ----
-const BLUEPRINT = {
-  ali: 4,
-  clti: 3,
-  aneurysm: 3,
-  avf: 2,
-  vascularTrauma: 2,
-  varicoseVeins: 3,
-  dvt: 3,
-};
+import exam1 from "../data/questions/exams/exam1";
+import exam2 from "../data/questions/exams/exam2";
+import exam3 from "../data/questions/exams/exam3";
 
-const BANKS = {
-  ali: {title: 'Acute Limb Ischemia (ALI)', data: aliQuestions},
-  clti: {title: 'Chronic Limb-Threatening Ischemia (CLTI)', data: cltiQuestions},
-  aneurysm: {title: 'Arterial Aneurysms', data: aneurysmQuestions},
-  avf: {title: 'Arteriovenous Fistula (AVF)', data: avfQuestions},
-  vascularTrauma: {title: 'Vascular Trauma', data: vascularTraumaQuestions},
-  varicoseVeins: {title: 'Varicose Veins', data: varicoseVeinsQuestions},
-  dvt: {title: 'Deep Vein Thrombosis (DVT)', data: dvtQuestions},
-};
+export default function ExamsPage() {
+  const EXAMS = useMemo(() => [exam1, exam2, exam3], []);
 
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
+  // modes: "exams" | "menu" | "quiz" | "case"
+  const [mode, setMode] = useState("exams");
+  const [activeExamId, setActiveExamId] = useState(null);
+  const [activeCaseId, setActiveCaseId] = useState(null);
 
-function generateExam() {
-  const picked = [];
+  const activeExam = useMemo(() => {
+    if (!activeExamId) return null;
+    return EXAMS.find((e) => e.id === activeExamId) || null;
+  }, [EXAMS, activeExamId]);
 
-  Object.entries(BLUEPRINT).forEach(([key, need]) => {
-    const bank = BANKS[key]?.data ?? [];
+  const activeCase = useMemo(() => {
+    if (!activeExam || !activeCaseId) return null;
+    return activeExam.cases.find((c) => c.id === activeCaseId) || null;
+  }, [activeExam, activeCaseId]);
 
-    // Add metadata + stable id
-    const withMeta = bank.map((q, idx) => ({
-      ...q,
-      _id: `${key}-${idx}-${String(q.question).slice(0, 20).replace(/\s+/g, '-')}`,
-      _topicKey: key,
-      _topicTitle: BANKS[key]?.title ?? key,
-    }));
+  const Card = ({ title, subtitle, right }) => (
+    <div
+      style={{
+        border: "1px solid rgba(0,0,0,0.08)",
+        borderRadius: 14,
+        padding: 18,
+        boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
+        marginBottom: 14,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+      }}
+    >
+      <div>
+        <div style={{ fontWeight: 700, fontSize: 18 }}>{title}</div>
+        {subtitle ? <div style={{ opacity: 0.75, marginTop: 4 }}>{subtitle}</div> : null}
+      </div>
+      <div>{right}</div>
+    </div>
+  );
 
-    const chosen = shuffle(withMeta).slice(0, Math.min(need, withMeta.length));
-    picked.push(...chosen);
-  });
+  const PrimaryBtn = ({ children, onClick }) => (
+    <button
+      onClick={onClick}
+      style={{
+        background: "#1f7a3f",
+        color: "white",
+        border: "none",
+        padding: "10px 16px",
+        borderRadius: 12,
+        fontWeight: 700,
+        cursor: "pointer",
+      }}
+    >
+      {children}
+    </button>
+  );
 
-  // final shuffle and ensure 20 max
-  return shuffle(picked).slice(0, 20);
-}
+  const SecondaryBtn = ({ children, onClick }) => (
+    <button
+      onClick={onClick}
+      style={{
+        background: "transparent",
+        color: "inherit",
+        border: "1px solid rgba(0,0,0,0.2)",
+        padding: "10px 16px",
+        borderRadius: 12,
+        fontWeight: 700,
+        cursor: "pointer",
+      }}
+    >
+      {children}
+    </button>
+  );
 
-export default function ExamPage() {
-  const [version, setVersion] = useState(0);
-  const exam = useMemo(() => generateExam(), [version]);
+  const goToExams = () => {
+    setMode("exams");
+    setActiveExamId(null);
+    setActiveCaseId(null);
+  };
 
-  const [answers, setAnswers] = useState({}); // {_id: optionIndex}
-  const [submitted, setSubmitted] = useState(false);
-
-  const score = useMemo(() => {
-    if (!submitted) return 0;
-    return exam.reduce((acc, q) => acc + (answers[q._id] === q.answer ? 1 : 0), 0);
-  }, [submitted, exam, answers]);
+  const goToExamMenu = (examId) => {
+    setActiveExamId(examId);
+    setActiveCaseId(null);
+    setMode("menu");
+  };
 
   return (
-    <Layout
-      title="Comprehensive Exam"
-      description="A 20-question comprehensive exam generated from all lessons."
-    >
-      <main className="container margin-vert--lg">
-        <Heading as="h1">Comprehensive Exam (20 Questions)</Heading>
+    <Layout title="Comprehensive Exams" description="Comprehensive exams">
+      <main style={{ padding: "24px 0" }}>
+        <div className="container">
+          <div style={{ marginBottom: 14, display: "flex", gap: 12, alignItems: "center" }}>
+            {mode !== "exams" ? (
+              <button
+                onClick={goToExams}
+                style={{ border: "none", background: "transparent", cursor: "pointer", opacity: 0.85, fontWeight: 600 }}
+              >
+                ← Back to exams
+              </button>
+            ) : null}
 
-        <p style={{opacity: 0.85}}>
-          Generated from all lessons. Click{' '}
-          <strong>Generate New Exam</strong> for a new random set.
-        </p>
+            {mode !== "exams" && mode !== "menu" ? (
+              <button
+                onClick={() => {
+                  setMode("menu");
+                  setActiveCaseId(null);
+                }}
+                style={{ border: "none", background: "transparent", cursor: "pointer", opacity: 0.85, fontWeight: 600 }}
+              >
+                Back to exam menu
+              </button>
+            ) : null}
+          </div>
 
-        <div style={{display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16}}>
-          <button
-            className="button button--primary"
-            onClick={() => {
-              setSubmitted(false);
-              setAnswers({});
-              setVersion((v) => v + 1);
-            }}
-          >
-            Generate New Exam
-          </button>
+          {mode === "exams" ? (
+            <>
+              <h1 style={{ marginBottom: 6 }}>Comprehensive Exams</h1>
+              <div style={{ opacity: 0.75, marginBottom: 18 }}>{EXAMS.length} exams available</div>
 
-          <button
-            className="button button--secondary"
-            onClick={() => setSubmitted(true)}
-            disabled={submitted}
-          >
-            Submit
-          </button>
+              {EXAMS.map((ex, idx) => (
+                <Card
+                  key={ex.id}
+                  title={`Exam ${idx + 1}`}
+                  subtitle={`${ex.quiz.questions.length} quiz questions • ${ex.cases.length} cases`}
+                  right={<PrimaryBtn onClick={() => goToExamMenu(ex.id)}>Open →</PrimaryBtn>}
+                />
+              ))}
+            </>
+          ) : null}
 
-          {submitted && (
-            <div style={{alignSelf: 'center'}}>
-              <strong>Score:</strong> {score} / {exam.length}
-            </div>
-          )}
-
-          <Link className="button button--outline button--secondary" to="/docs/intro">
-            Back to Library
-          </Link>
-        </div>
-
-        {exam.map((q, index) => {
-          const selected = answers[q._id];
-          const isCorrect = submitted && selected === q.answer;
-          const isWrong = submitted && selected !== undefined && selected !== q.answer;
-
-          return (
-            <div
-              key={q._id}
-              style={{
-                border: '1px solid var(--ifm-color-emphasis-300)',
-                borderRadius: 12,
-                padding: 16,
-                marginBottom: 14,
-              }}
-            >
-              <div style={{display: 'flex', justifyContent: 'space-between', gap: 12}}>
-                <Heading as="h3" style={{marginBottom: 8}}>
-                  Q{index + 1}. {q.question}
-                </Heading>
-                <small style={{opacity: 0.75}}>{q._topicTitle}</small>
+          {mode === "menu" && activeExam ? (
+            <>
+              <h1 style={{ marginBottom: 6 }}>{activeExam.title}</h1>
+              <div style={{ opacity: 0.75, marginBottom: 18 }}>
+                {activeExam.quiz.questions.length} quiz questions • {activeExam.cases.length} case discussions
               </div>
 
-              <div style={{display: 'grid', gap: 8}}>
-                {q.options.map((opt, i) => (
-                  <label key={i} style={{display: 'flex', gap: 10, alignItems: 'flex-start'}}>
-                    <input
-                      type="radio"
-                      name={q._id}
-                      checked={selected === i}
-                      disabled={submitted}
-                      onChange={() => setAnswers((a) => ({...a, [q._id]: i}))}
-                    />
-                    <span style={{fontWeight: submitted && i === q.answer ? 700 : 400}}>
-                      {opt}
-                      {submitted && i === q.answer ? ' ✅' : ''}
-                      {submitted && isWrong && i === selected ? ' ❌' : ''}
-                    </span>
-                  </label>
-                ))}
+              <Card
+                title="Quiz"
+                subtitle={`${activeExam.quiz.questions.length} Questions (MCQ)`}
+                right={<PrimaryBtn onClick={() => setMode("quiz")}>Start →</PrimaryBtn>}
+              />
+
+              <div style={{ marginTop: 18, marginBottom: 10, fontWeight: 800, fontSize: 18 }}>
+                Case Discussions 
               </div>
 
-              {submitted && (
-                <div style={{marginTop: 10}}>
-                  {isCorrect ? 'Correct ✅' : isWrong ? 'Incorrect ❌' : 'Not answered'}
+              {activeExam.cases.map((c) => (
+                <Card
+                  key={c.id}
+                  title={c.title}
+                  subtitle={`${c.questions.length} Questions (MCQ)`}
+                  right={
+                    <PrimaryBtn
+                      onClick={() => {
+                        setActiveCaseId(c.id);
+                        setMode("case");
+                      }}
+                    >
+                      Start →
+                    </PrimaryBtn>
+                  }
+                />
+              ))}
+            </>
+          ) : null}
+
+          {mode === "quiz" && activeExam ? (
+            <StepQuiz
+              key={`exam-quiz-${activeExam.id}`}
+              title={activeExam.quiz.title}
+              questions={activeExam.quiz.questions}
+              onExit={() => setMode("menu")}
+              autoStart
+            />
+          ) : null}
+
+          {mode === "case" && activeExam && activeCase ? (
+            <>
+              <div
+                style={{
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  borderRadius: 14,
+                  padding: 16,
+                  marginBottom: 14,
+                  background: "rgba(0,0,0,0.02)",
+                }}
+              >
+                <div style={{ fontWeight: 800, marginBottom: 6 }}>{activeCase.title}</div>
+                <div style={{ opacity: 0.85, lineHeight: 1.6 }}>{activeCase.vignette}</div>
+
+                <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <SecondaryBtn
+                    onClick={() => {
+                      setMode("menu");
+                      setActiveCaseId(null);
+                    }}
+                  >
+                    Back to menu
+                  </SecondaryBtn>
                 </div>
-              )}
-            </div>
-          );
-        })}
+              </div>
+
+              <StepQuiz
+                key={`exam-case-${activeExam.id}-${activeCase.id}`}
+                title="Case Questions"
+                questions={activeCase.questions}
+                onExit={() => setMode("menu")}
+                autoStart
+              />
+            </>
+          ) : null}
+        </div>
       </main>
     </Layout>
   );
