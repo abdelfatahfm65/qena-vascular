@@ -5,7 +5,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 const config = {
   title: "Vascular Surgery Library",
   tagline: "A focused medical learning library",
-  favicon: "img/Faviconn.png",
+  favicon: "img/Favcon.png",
 
   future: {
     v4: true,
