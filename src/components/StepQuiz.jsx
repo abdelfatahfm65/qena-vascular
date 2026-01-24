@@ -4,7 +4,7 @@ export default function StepQuiz({
   questions = [],
   onExit,
   title = "Quiz",
-  autoStart = false, // ✅ NEW
+  autoStart = false,
 }) {
   const total = questions.length;
 
@@ -17,19 +17,34 @@ export default function StepQuiz({
 
   const answeredCount = useMemo(() => Object.keys(selected).length, [selected]);
 
+  // ✅ helper: get correct option index whether answer is text or index
+  const getCorrectIndex = (q) => {
+    if (!q) return null;
+
+    // answer as number (index)
+    if (typeof q.answer === "number") return q.answer;
+
+    // answer as text
+    if (typeof q.answer === "string" && Array.isArray(q.options)) {
+      const idx = q.options.indexOf(q.answer);
+      return idx >= 0 ? idx : null;
+    }
+
+    return null;
+  };
+
   const score = useMemo(() => {
-    return questions.reduce((acc, q, i) => acc + (selected[i] === q.answer ? 1 : 0), 0);
+    return questions.reduce((acc, q, i) => {
+      const userIdx = selected[i];
+      const correctIdx = getCorrectIndex(q);
+      return acc + (userIdx != null && correctIdx != null && userIdx === correctIdx ? 1 : 0);
+    }, 0);
   }, [questions, selected]);
 
-  // ✅ لو autoStart=true ادخل مباشرة على الأسئلة
   useEffect(() => {
-    if (autoStart) {
-      setStarted(true);
-    } else {
-      // لو autoStart=false ارجع لشاشة البداية (خصوصًا لو نفس الكومبوننت اتعاد استخدامه)
-      setStarted(false);
-    }
-    // دايمًا ابدأ من الأول لما تتغير الأسئلة/المود
+    if (autoStart) setStarted(true);
+    else setStarted(false);
+
     setIndex(0);
     setSelected({});
     setSubmitted(false);
@@ -56,7 +71,6 @@ export default function StepQuiz({
   }
 
   function reset() {
-    // ✅ لو الصفحة فيها menu-start (autoStart=true) ما نرجعش لشاشة Start الداخلية
     setStarted(autoStart ? true : false);
     setIndex(0);
     setSelected({});
@@ -74,7 +88,6 @@ export default function StepQuiz({
     );
   }
 
-  // Start Screen (هتظهر فقط لو autoStart=false)
   if (!started) {
     return (
       <div
@@ -119,7 +132,7 @@ export default function StepQuiz({
                 cursor: "pointer",
               }}
             >
-              Back to lesson
+              Back
             </button>
           )}
         </div>
@@ -127,7 +140,6 @@ export default function StepQuiz({
     );
   }
 
-  // Results Screen
   if (submitted) {
     return (
       <div
@@ -149,9 +161,9 @@ export default function StepQuiz({
 
           <div style={{ marginTop: 12 }}>
             {questions.map((q, i) => {
-              const user = selected[i];
-              const correct = q.answer;
-              const ok = user === correct;
+              const userIdx = selected[i];
+              const correctIdx = getCorrectIndex(q);
+              const ok = userIdx != null && correctIdx != null && userIdx === correctIdx;
 
               return (
                 <div
@@ -169,10 +181,11 @@ export default function StepQuiz({
                   <div style={{ color: ok ? "#1e7e34" : "#c82333", fontWeight: 800 }}>
                     {ok ? "Correct" : "Wrong"}
                   </div>
+
                   <div style={{ marginTop: 6, color: "var(--ifm-color-emphasis-700)" }}>
-                    Your answer: {user != null ? q.options[user] : "Not answered"}
+                    Your answer: {userIdx != null ? q.options[userIdx] : "Not answered"}
                     <br />
-                    Correct answer: {q.options[correct]}
+                    Correct answer: {correctIdx != null ? q.options[correctIdx] : "Not set"}
                   </div>
                 </div>
               );
@@ -208,7 +221,7 @@ export default function StepQuiz({
                 cursor: "pointer",
               }}
             >
-              Back to lesson
+              Back
             </button>
           )}
         </div>
@@ -216,7 +229,6 @@ export default function StepQuiz({
     );
   }
 
-  // Quiz Screen (step-by-step)
   const progressText = `${index + 1} / ${total}`;
 
   return (

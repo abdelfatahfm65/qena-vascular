@@ -61,7 +61,7 @@ const config = {
       title: "Vascular Surgery Library",
       logo: {
         alt: "Vascular Surgery Library",
-        src: "img/Qena-vascular-logo.png",
+        src: "img/Qena-vasc-logo.png",
       },
       items: [
         {
