@@ -55,6 +55,11 @@ export default function Home() {
               <Link className="button button--secondary button--lg" to="/exam">
                 Comprehensive Exam
               </Link>
+
+              {/* ✅ Gallery button (added after Comprehensive Exam) */}
+              <Link className="button button--secondary button--lg" to="/docs/vascular-image-gallery">
+                Gallery
+              </Link>
             </div>
 
             <hr style={{ margin: '28px 0' }} />

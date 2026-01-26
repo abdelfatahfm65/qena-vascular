@@ -76,6 +76,13 @@ const config = {
           position: "left",
         },
         {
+          type: "doc",
+          docId: "vascular-image-gallery",
+          label: "Gallery",
+          position: "left",
+        },
+        
+        {
           type: "html",
           position: "right",
           value: '<div id="user-menu"></div>',
