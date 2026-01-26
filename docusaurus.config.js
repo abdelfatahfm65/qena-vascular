@@ -28,6 +28,24 @@ const config = {
   // ✅ أهم سطر عشان Supabase config يشتغل
   scripts: ["/config.js"],
 
+  // ✅ PWA Plugin
+  plugins: [
+    [
+      "@docusaurus/plugin-pwa",
+      {
+        debug: false,
+        offlineModeActivationStrategies: ["appInstalled", "standalone", "queryString"],
+        pwaHead: [
+          { tagName: "link", rel: "icon", href: "/img/Favcon.png" },
+          { tagName: "link", rel: "manifest", href: "/manifest.json" },
+          { tagName: "meta", name: "theme-color", content: "#2e7d32" },
+          { tagName: "meta", name: "apple-mobile-web-app-capable", content: "yes" },
+          { tagName: "meta", name: "apple-mobile-web-app-status-bar-style", content: "default" },
+        ],
+      },
+    ],
+  ],
+
   presets: [
     [
       "classic",
@@ -81,18 +99,17 @@ const config = {
           label: "Gallery",
           position: "left",
         },
-        
+
         {
           type: "html",
           position: "right",
           value: '<div id="user-menu"></div>',
         },
-        
       ],
     },
 
     footer: {
-      style: 'dark',
+      style: "dark",
       links: [],
       copyright: `
         © ${new Date().getFullYear()} Vascular Surgery Library   
