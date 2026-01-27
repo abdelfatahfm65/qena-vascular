@@ -93,13 +93,7 @@ const config = {
           label: "Comperhensive Exam",
           position: "left",
         },
-        {
-          type: "doc",
-          docId: "vascular-image-gallery",
-          label: "Gallery",
-          position: "left",
-        },
-
+        
         {
           type: "html",
           position: "right",
